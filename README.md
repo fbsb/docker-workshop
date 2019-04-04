@@ -248,3 +248,90 @@ Zurückkehren zum Workshop.
 ```
 cd ..
 ```
+
+### 4. Builder pattern
+
+```
+cd builder-pattern
+```
+
+Zunächst bauen wir das Image.
+
+```
+docker build -t webapp .
+```
+
+Und dann warten wir...
+
+Sobald das Image gebaut wurde führen wir diese aus.
+
+```
+docker run --rm -it -p 80:8080 webapp
+```
+
+… und machen einige Requests mit curl
+
+```
+curl localhost
+curl localhost/test
+```
+
+Die Anwendung ist sehr simpel. Sie gibt den angefragten Pfad zurück.
+
+Wir schauen uns die Größe des Images.
+
+```
+docker image ls webapp
+```
+
+… und sehen, dass das Image knapp 800MB groß ist. Das bedeutet, dass wir beim Deployen erstmal 800MB herunterladen müssen. Das verlangsamt das ganze und nutzt unnötig Speicher.
+
+Wir können das besser machen.
+
+Als erstes können wir eine `alpine`-Variante benutzen die deutlich kleiner ist.
+
+```
+FROM golang:1.12.1-alpine
+```
+… und bauen das Image neu
+
+```
+docker build -t webapp .
+```
+
+Wir prüfen die Größe erneut.
+
+```
+docker image ls webapp
+```
+
+… und merken eine Reduzierung auf ca. 400MB.
+
+Wir können aber noch mehr tun.
+
+Wir teilen das Dockerfile in 2 Teile.
+
+```
+FROM golang:1.12.1-alpine AS builder
+```
+
+und
+
+```
+FROM scratch
+
+COPY --from=builder /go/bin/webapp /bin/webapp
+
+EXPOSE 8080
+
+CMD ["/bin/webapp"]
+```
+
+Wir bauen das Image und prüfen die endgültige Größe.
+
+```
+docker build -t webapp .
+docker image ls webapp
+```
+
+Das finale Image hat knapp 8MB oder 1% von der Ursprungsgröße.
