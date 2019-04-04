@@ -177,12 +177,10 @@ services:
   vote:
     networks:
       - front
-      - back
 
   result:
     networks:
       - front
-      - back
 
   worker:
     networks:
@@ -191,10 +189,12 @@ services:
   redis:
     networks:
       - back
+      - front
 
   db:
     networks:
       - back
+      - front
 
 networks:
   front:
