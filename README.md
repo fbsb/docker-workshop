@@ -113,3 +113,138 @@ Zurückkehren zum Workshop.
 ```
 cd ..
 ```
+
+### 3. Multi-container voting app
+
+```
+cd multi-container
+```
+
+![Architecture diagram](multi-container/architecture.png)
+
+`docker-compose.yml` im Editor öffnen.
+
+```
+code docker-compose.yml
+```
+
+Komponenten definieren
+
+```
+services:
+  vote:
+    build: ./vote
+
+  results:
+    build: ./result
+
+  worker:
+    build:
+      context: ./worker
+
+  redis:
+    image: redis:alpine
+
+  db:
+    image: postgres:9.4
+```
+
+Komponenten starten
+
+```
+docker-compose up
+```
+
+Alle komponenten werden richtig gestartet, allerdings wir können die Anwendung nicht erreichen. Dafür müssen wir Ports für unseren 2 Frontends freigeben.
+
+```
+  vote:
+    build: ./vote
+    ports:
+      - 5000:80
+
+  results:
+    build: ./result
+    ports:
+      - 5001:80
+```
+
+Komponenten durch private Netze trennen.
+
+
+```
+services:
+  vote:
+    networks:
+      - front
+      - back
+
+  result:
+    networks:
+      - front
+      - back
+
+  worker:
+    networks:
+      - back
+
+  redis:
+    networks:
+      - back
+
+  db:
+    networks:
+      - back
+
+networks:
+  front:
+  back:
+```
+
+Damit die DB-Daten nicht weg sind, wenn wir die Container löschen, müssen wir der DB Komponente einen Volume anhängen, wo die Daten persistent gespeichert werden.
+
+```
+services:
+  db:
+    volumes:
+      - "db-data:/var/lib/postgresql/data"
+
+volumes:
+  db-data:
+```
+
+Damit die Komponenten in der Reihenfolge der Abhängigkeiten gestartet werden, müssen wir diese definieren.
+
+```
+services:
+  vote:
+    depends_on:
+      - redis
+  result:
+    depends_on:
+      - db
+  worker:
+    depends_on:
+      - redis
+      - db
+
+```
+
+Während der Entwicklung ist es üblich den Quellcode sehr oft zu ändern, allerdings erfordert jede Änderung ein Neubau der Container. Um dies zu verhindern, kann der Quelltext auch als Volume eingebunden werden, sodass eine Änderung sofort in den Container sichtbar ist.
+
+```
+services:
+  vote:
+    volumes:
+      - ./vote:/app
+
+  result:
+    volumes:
+      - ./result:/app
+```
+
+Zurückkehren zum Workshop.
+
+```
+cd ..
+```
