@@ -30,3 +30,20 @@ Innerhalb der Vagrant VM:
 ```
 cd /vagrant
 ```
+
+Übungen:
+--------
+
+### 1. Basics
+
+Docker image vom DockerHub herunterladen:
+
+```
+docker pull hello-world
+```
+
+Docker Container ausführen:
+
+```
+docker run hello-world
+```
