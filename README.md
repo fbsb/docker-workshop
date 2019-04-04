@@ -15,6 +15,7 @@ Alternativ: Virtualbox + Vagrant
 ---------------
 
 https://www.vagrantup.com/downloads.html
+
 https://www.virtualbox.org/wiki/Downloads
 
 > Für bestimmte Linux Distributionen werden `Vagrant` und `VirtualBox` auch als Paket angeboten.
